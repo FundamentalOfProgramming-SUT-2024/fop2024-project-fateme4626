@@ -1501,10 +1501,6 @@ int draw_map_for_other_floor(int rows, player *user,
             } while (first_y < 4 || first_x + size_x > cols - 4 || first_y + size_y > rows - 4 || first_x < 4);
 
             room_loop_counter++;
-            if (room_loop_counter > 100)
-            {
-                return 0;
-            }
 
         } while (check_collision(cols, map, first_y, first_x, size_y, size_x) ||
 
@@ -1752,9 +1748,9 @@ int draw_map_for_first_floor(int rows, player *user, int cols, char map[rows][co
     return 1;
 }
 
-    int  u = 1;
+int u = 1;
 
-void show_foods(player user)
+void show_foods(player *user)
 {
     refresh();
     WINDOW *food_menu = newwin(LINES - 20, COLS / 2, (LINES) / 6, (COLS) / 4);
@@ -1766,7 +1762,7 @@ void show_foods(player user)
     mvwprintw(food_menu, 2, 40, "%s", "List of Foods");
     mvwprintw(food_menu, 4, 1, "Hunger level:");
 
-    for (int i = 0; i < user.hunger_level; i++)
+    for (int i = 0; i < user->hunger_level; i++)
     {
         mvwprintw(food_menu, 4, 15 + i, "%lc", L'🟥');
     }
@@ -1781,7 +1777,7 @@ void show_foods(player user)
             if (i == choice)
                 wattron(food_menu, A_REVERSE);
             if (i == 0)
-                mvwprintw(food_menu, 16 + 2 * i, 32, "%s : %d", menu[i], user.num_foods);
+                mvwprintw(food_menu, 16 + 2 * i, 32, "%s : %d", menu[i], user->num_foods);
             else
                 mvwprintw(food_menu, 16 + 2 * i, 32, "%s", menu[i]);
 
@@ -1802,28 +1798,29 @@ void show_foods(player user)
             choice = (choice == 1) ? 0 : choice + 1;
             break;
         case 10: // Enter key
-            if (choice == 0 && user.num_foods > 0)
+            if (choice == 0 && user->num_foods > 0)
             {
-                user.num_foods--;
-                user.hunger_level--;
-                if (foods[user.num_foods].time > 12) // sami shodan
+                user->num_foods--;
+                time_t time_now= time(NULL);
+                int time_ex = (int)difftime(time_now, foods[user->num_foods].time);
+                if (time_ex > 12) // sami shodan
                 {
-                    user.health--;
-                    if (user.health == 0)
+                    user->health--;
+                    if (user->health == 0)
                         return;
                 }
-                else{
-                
-                if (user.health < 20)
+                else
                 {
-                    user.num_of_eaten_food++;
-                    user.health += user.num_of_eaten_food / (u * 3);
-                    if (user.num_of_eaten_food / (u * 3) != 0)
+
+                    if (user->health < 20)
                     {
-                        u++;
+                        user->hunger_level--;
+
+                        user->num_of_eaten_food++;
+                        user->health++;
                     }
-                }
-                }
+                
+            }
             }
 
             else if (choice == 1)
@@ -1831,9 +1828,11 @@ void show_foods(player user)
                 delwin(food_menu);
                 refresh();
                 return;
+            
             }
             break;
-        }
+        
+    }
     }
 
     wrefresh(food_menu);
@@ -1995,7 +1994,7 @@ int move_char(int input, player *user, int cols, int rows, char map[rows][cols],
     else if (input == 'e')
     {
         // nodelay(stdscr, FALSE);
-        show_foods(*user);
+        show_foods(user);
         return 1;
     }
 
@@ -2006,12 +2005,11 @@ int move_char(int input, player *user, int cols, int rows, char map[rows][cols],
     }
 
     int current_room = check_position_of_object(initial_y, initial_x, rows, cols, map, map_rooms);
-    if(current_room = num_of_treasure_room)
-    {
-        return 16;
-    }
+
     monster_move(current_room, user, rows, cols, map, map_rooms);
     display_map(user, cols, rows, map, map_rooms, n);
+    if(user->health==0)
+    return 1;
 
     switch (map[initial_y][initial_x])
     {
@@ -2058,7 +2056,7 @@ int move_char(int input, player *user, int cols, int rows, char map[rows][cols],
         int c = getch();
         if (c == 10)
         {
-             mvprintw(1, 20, "you catched gold");
+            mvprintw(1, 20, "you catched gold");
             getch();
             mvprintw(1, 20, "                        ");
             user->gold++;
@@ -2384,7 +2382,7 @@ void save_player_info(Gamer *g, player user)
 
     fclose(file2);
 
-    FILE* new= fopen("scores.txt", "a");
+    FILE *new = fopen("scores.txt", "a");
     fprintf(new, "%s:%d:%d:%d", user.name, user.score, user.gold, user.exprience);
     fclose(new);
 }
@@ -2401,7 +2399,6 @@ void control_play_in_a_floor(int rows, int cols, int floor,
     }
     char map[rows][cols];
     room map_rooms[6];
-    memset(map, 0, sizeof(map));
 
     for (int i = 0; i < 6; i++)
     {
@@ -2500,7 +2497,7 @@ void control_play_in_a_floor(int rows, int cols, int floor,
         display_map(user, cols, rows, map, map_rooms, 0);
         k = move_char(input, user, cols, rows, map, map_rooms, 0);
 
-        if (k == 2 || k == 0 || k==16) 
+        if (k == 2 || k == 0 || k == 16)
             break;
 
         // usleep(100000);
@@ -2515,18 +2512,18 @@ void control_play_in_a_floor(int rows, int cols, int floor,
     if (k == 2)
     {
         user->level++;
-        mvprintw(2,20, "you reach to new level");
+        mvprintw(2, 20, "you reach to new level");
         getch();
-        mvprintw(2,20, "                              ");
+        mvprintw(2, 20, "                              ");
 
         control_play_in_a_floor(rows, cols, floor + 1,
                                 all_floor_rooms, user, g);
     }
 
-    if(k==16)
+    if (k == 16)
     {
         clear();
-        mvprintw(24, 55,"you win the game");
+        mvprintw(24, 55, "you win the game");
         return;
     }
     return;
