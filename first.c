@@ -280,6 +280,7 @@ int sign_in(Gamer *g)
         mvprintw((LINES - 2) / 2 + 4, (COLS - 2 - strlen("!! INVALID PASSWORD !!")) / 2, "!! INVALID PASSWORD !!");
         attroff(COLOR_PAIR(1));
         refresh();
+        getch();
         return 0;
     }
     clear();
