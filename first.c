@@ -1999,6 +1999,10 @@ int move_char(int input, player *user, int cols, int rows, char map[rows][cols],
     }
 
     int current_room = check_position_of_object(initial_y, initial_x, rows, cols, map, map_rooms);
+    if(current_room = num_of_treasure_room)
+    {
+        return 16;
+    }
     monster_move(current_room, user, rows, cols, map, map_rooms);
     display_map(user, cols, rows, map, map_rooms, n);
 
@@ -2486,7 +2490,7 @@ void control_play_in_a_floor(int rows, int cols, int floor,
         display_map(user, cols, rows, map, map_rooms, 0);
         k = move_char(input, user, cols, rows, map, map_rooms, 0);
 
-        if (k == 2 || k == 0)
+        if (k == 2 || k == 0 || k==16) 
             break;
 
         // usleep(100000);
@@ -2503,6 +2507,13 @@ void control_play_in_a_floor(int rows, int cols, int floor,
         user->level++;
         control_play_in_a_floor(rows, cols, floor + 1,
                                 all_floor_rooms, user, g);
+    }
+
+    if(k==16)
+    {
+        clear();
+        mvprintw(24, 55,"you win the game");
+        return;
     }
     return;
 }
