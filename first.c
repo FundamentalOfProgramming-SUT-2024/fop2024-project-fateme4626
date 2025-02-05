@@ -2057,6 +2057,9 @@ int move_char(int input, player *user, int cols, int rows, char map[rows][cols],
         int c = getch();
         if (c == 10)
         {
+             mvprintw(1, 20, "you catched gold");
+            getch();
+            mvprintw(1, 20, "                        ");
             user->gold++;
             user->score += 5; // gold= 5*score
             user->position.y = initial_y;
@@ -2511,6 +2514,10 @@ void control_play_in_a_floor(int rows, int cols, int floor,
     if (k == 2)
     {
         user->level++;
+        mvprintw(2,20, "you reach to new level");
+        getch();
+        mvprintw(2,20, "                              ");
+
         control_play_in_a_floor(rows, cols, floor + 1,
                                 all_floor_rooms, user, g);
     }
