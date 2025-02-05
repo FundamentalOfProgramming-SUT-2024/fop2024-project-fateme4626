@@ -803,6 +803,7 @@ void show_scores(player *scores, int count, Gamer *g, int current_person)
                     }
                     else
                     {
+                        attron(COLOR_PAIR(3));
                         mvprintw(12, 10 + 12, "%lc", L'🥇');
                         mvprintw(12, 25 + 12, "%s", scores[0].name);
                         mvprintw(12, 40 + 12, "%d", scores[0].score);
@@ -810,6 +811,7 @@ void show_scores(player *scores, int count, Gamer *g, int current_person)
                         minute = (scores[0].exprience) / 60;
                         second = scores[0].exprience % 60;
                         mvprintw(12, 70 + 12, "%d:%d", minute, second);
+                        attroff(COLOR_PAIR(3));
                     }
                 }
 
@@ -829,6 +831,7 @@ void show_scores(player *scores, int count, Gamer *g, int current_person)
                     }
                     else
                     {
+                        attron(COLOR_PAIR(3));
                         mvprintw(17, 10 + 12, "%lc", L'🥈');
                         mvprintw(17, 25 + 12, "%s", scores[1].name);
                         mvprintw(17, 40 + 12, "%d", scores[1].score);
@@ -836,6 +839,7 @@ void show_scores(player *scores, int count, Gamer *g, int current_person)
                         minute = (scores[1].exprience % 3600) / 60;
                         second = scores[1].exprience % 60;
                         mvprintw(17, 70 + 12, "%d:%d", minute, second);
+                        attroff(COLOR_PAIR(3));
                     }
                 }
 
@@ -855,6 +859,7 @@ void show_scores(player *scores, int count, Gamer *g, int current_person)
                     }
                     else
                     {
+                        attron(COLOR_PAIR(3));
                         mvprintw(22, 10 + 12, "%lc", L'🥉');
                         mvprintw(22, 25 + 12, "%s", scores[2].name);
                         mvprintw(22, 40 + 12, "%d", scores[2].score);
@@ -862,6 +867,7 @@ void show_scores(player *scores, int count, Gamer *g, int current_person)
                         minute = (scores[2].exprience % 3600) / 60;
                         second = scores[2].exprience % 60;
                         mvprintw(22, 70 + 12, "%d:%d", minute, second);
+                        attroff(COLOR_PAIR(3));
                     }
                 }
 
