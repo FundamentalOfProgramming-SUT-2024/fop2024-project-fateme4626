@@ -1,4 +1,4 @@
-//403105809
+// 403105809
 #include <ncursesw/ncurses.h>
 #include <stdio.h>
 #include <string.h>
@@ -22,6 +22,14 @@ typedef struct
 
 typedef struct
 {
+    pair point;
+    int health;
+    char type;
+    int room;
+} monster;
+
+typedef struct
+{
     int score;
     int max_items;
     char name[50];
@@ -30,12 +38,14 @@ typedef struct
     char security_word[200];
     char difficulty[20];
     char hero_color[10];
+    int gold;
+    int exprience;
 } Gamer;
 
 typedef struct first
 {
     pair pos;
-    int type;
+    time_t time;
 } food;
 
 typedef struct
@@ -83,6 +93,8 @@ typedef struct
 
     int num_food;
 
+    int num_monster;
+
 } room;
 
 void menu(Gamer *g);
@@ -95,7 +107,7 @@ void login_as_guest(Gamer *g);
 char *random_pass();
 void game_menu(Gamer *g, const char *filename);
 void sort_scores(const char *filename, Gamer *g);
-void show_scores(player *scores, int i, Gamer *g);
+void show_scores(player *scores, int i, Gamer *g, int);
 void new_game(Gamer *g);
 
 int dfs_visit(char **map, char **mark, int x, int y, pair **parent, pair finish, int, int);
@@ -545,9 +557,15 @@ void game_menu(Gamer *g, const char *filename)
     return;
 }
 
-void score_table()
+/*
+void score_table(FILE* file)
 {
-}
+
+
+
+
+
+}*/
 
 void setting(Gamer *g)
 {
@@ -721,13 +739,8 @@ void sort_scores(const char *filename, Gamer *g)
     int i = 0;
 
     FILE *file = fopen(filename, "r");
-    if (file == NULL)
-    {
-        fprintf(stderr, "Error opening file!\n");
-        return;
-    }
 
-    while (fscanf(file, "%[^:]:%d:%d", scores[i].name, &scores[i].score, &scores[i].gold) != EOF)
+    while (fscanf(file, "%[^:]:%d:%d:%d\n", scores[i].name, &scores[i].score, &scores[i].gold, &scores[i].exprience) != EOF)
     {
         i++;
     }
@@ -746,12 +759,24 @@ void sort_scores(const char *filename, Gamer *g)
         }
     }
 
-    show_scores(scores, i, g);
+    int current_person;
+
+    for (int k = 0; k < i; k++)
+    {
+        if (strcmp(g->name, scores[k].name) == 0)
+        {
+            current_person = k;
+        }
+    }
+
+    show_scores(scores, i, g, current_person);
 }
 
-void show_scores(player *scores, int count, Gamer *g)
+void show_scores(player *scores, int count, Gamer *g, int current_person)
 {
     clear();
+    int minute, second;
+    int c='\0';
     draw_border();
 
     if (count == 0)
@@ -760,18 +785,132 @@ void show_scores(player *scores, int count, Gamer *g)
     }
     else
     {
-        mvprintw(3, (COLS - 2) / 2, "💰");
-        //  for (int y = 0; y < count; y++) {
-        int line = (LINES - count) / 2 + 1;
-        //  if (y == 0) {
-        mvprintw(line, (COLS - strlen("Legend")) / 2 - 2, "\xF0\x9F\x8F\x86 Legend");
-        // }
-        /*
-         mvprintw(line, (COLS - strlen(scores[y].name)) / 2, "%s", scores[y].name);
-         mvprintw(line, (COLS - 2) / 2, "%d", scores[y].gold);
-         mvprintw(line, (COLS - 2) * 4 / 5, "%d", scores[y].score); */
-        // }
+        int h = 0;
+        while(c!='q')
+        {
+            clear();
+        mvprintw(7, 25+12, "%s", "Name");
+        mvprintw(7, 40+12, "%lc", L'⭐');
+        mvprintw(7, 57+12, "%lc", L'💰');
+        mvprintw(7, 70+12, "%lc", L'🕝');
+       
+
+        for (int i = h; i < h+6; i++)
+        {
+            if (i == 0)
+            {
+                if (i == current_person)
+                {
+                    attron(COLOR_PAIR(4));
+                    mvprintw(12, 10+12, "%lc", L'🥇');
+                    mvprintw(12, 25+12, "%s", scores[0].name);
+                    mvprintw(12, 40+12, "%d", scores[0].score);
+                    mvprintw(12, 57+12, "%d", scores[0].gold);
+                    int minute = (scores[0].exprience) / 60;
+                    int second = scores[0].exprience % 60;
+                    mvprintw(12, 70+12, "%d:%d", minute, second);
+                    attroff(COLOR_PAIR(4));
+                }
+                else
+                {
+                    mvprintw(12, 10+12, "%lc", L'🥇');
+                    mvprintw(12, 25+12, "%s", scores[0].name);
+                    mvprintw(12, 40+12, "%d", scores[0].score);
+                    mvprintw(12, 57+12, "%d", scores[0].gold);
+                    minute = (scores[0].exprience) / 60;
+                    second = scores[0].exprience % 60;
+                    mvprintw(12, 70+12, "%d:%d", minute, second);
+                }
+            }
+
+            else if (i == 1)
+            {
+                if (i == current_person)
+                {
+                    attron(COLOR_PAIR(4));
+                    mvprintw(17, 10+12, "%lc", L'🥈');
+                    mvprintw(17, 25+12, "%s", scores[1].name);
+                    mvprintw(17, 40+12, "%d", scores[1].score);
+                    mvprintw(17, 57+12, "%d", scores[1].gold);
+                    minute = (scores[1].exprience % 3600) / 60;
+                    second = scores[1].exprience % 60;
+                    mvprintw(17, 70+12, "%d:%d", minute, second);
+                    attroff(COLOR_PAIR(4));
+                }
+                else
+                {
+                    mvprintw(17, 10+12, "%lc", L'🥈');
+                    mvprintw(17, 25+12, "%s", scores[1].name);
+                    mvprintw(17, 40+12, "%d", scores[1].score);
+                    mvprintw(17, 57+12, "%d", scores[1].gold);
+                    minute = (scores[1].exprience % 3600) / 60;
+                    second = scores[1].exprience % 60;
+                    mvprintw(17, 70+12, "%d:%d", minute, second);
+                }
+            }
+
+            else if (i == 2)
+            {
+                if (i == current_person)
+                {
+                    attron(COLOR_PAIR(4));
+                    mvprintw(22, 10+12, "%lc", L'🥉');
+                    mvprintw(22, 25+12, "%s", scores[2].name);
+                    mvprintw(22, 40+12, "%d", scores[2].score);
+                    mvprintw(22, 57+12, "%d", scores[2].gold);
+                    minute = (scores[2].exprience % 3600) / 60;
+                    second = scores[2].exprience % 60;
+                    mvprintw(22, 70+12, "%d:%d", minute, second);
+                    attroff(COLOR_PAIR(4));
+                }
+                else
+                {
+                    mvprintw(22, 10+12, "%lc", L'🥉');
+                    mvprintw(22, 25+12, "%s", scores[2].name);
+                    mvprintw(22, 40+12, "%d", scores[2].score);
+                    mvprintw(22, 57+12, "%d", scores[2].gold);
+                    minute = (scores[2].exprience % 3600) / 60;
+                    second = scores[2].exprience % 60;
+                    mvprintw(22, 70+12, "%d:%d", minute, second);
+                }
+            }
+
+            else
+            {
+                if (i == current_person)
+                {
+                    attron(COLOR_PAIR(4));
+                    mvprintw(5 * (i-h) + 12, 10+12, "%d", i + 1);
+                    mvprintw(5 * (i-h) + 12, 25+12, "%s", scores[i].name);
+                    mvprintw(5 * (i-h) + 12, 40+12, "%d", scores[i].score);
+                    mvprintw(5 * (i-h) + 12, 57+12, "%d", scores[i].gold);
+                    minute = (scores[i].exprience % 3600) / 60;
+                    second = scores[i].exprience % 60;
+                    mvprintw(5 * (i-h) + 12, 70+12, "%d:%d", minute, second);
+                    attroff(COLOR_PAIR(4));
+                }
+                else
+                {
+                    mvprintw(5*(i-h)+12, 10+12, "%d", i + 1);
+                    mvprintw(5*(i-h)+12, 25+12, "%s", scores[i].name);
+                    mvprintw(5*(i-h)+12, 40+12, "%d", scores[i].score);
+                    mvprintw(5*(i-h)+12, 57+12, "%d", scores[i].gold);
+                    minute = (scores[i].exprience % 3600) / 60;
+                    second = scores[i].exprience % 60;
+                    mvprintw(5*(i-h)+12, 70+12, "%d:%d", minute, second);
+                }
+            }
+        }
+      c = getch();
+      refresh();
+       if(c==10)
+       {
+        h+=6;
+       }  
     }
+       
+    }
+
     refresh();
     getch();
 }
@@ -910,6 +1049,9 @@ void generate_treasure_room(room map_rooms[6], int current_room)
 }
 
 int room_number_of_password_door;
+monster monsts[12];
+
+food foods[5];
 
 void display_map(player *user, int cols, int rows, char map[rows][cols], room map_rooms[6], int n)
 {
@@ -949,7 +1091,7 @@ void display_map(player *user, int cols, int rows, char map[rows][cols], room ma
                             attroff(COLOR_PAIR(5));
                             break;
                         }
-                        case 'F':
+                        case 'f':
                         {
                             attron(COLOR_PAIR(3) | A_BOLD);
                             mvprintw(x, y, "%c", '*');
@@ -957,13 +1099,39 @@ void display_map(player *user, int cols, int rows, char map[rows][cols], room ma
                             break;
                         }
                         case 'M':
-                        case 'D':
+                        case 'd':
                         case 'W':
                         case 'A':
                         case 'S':
                             attron(COLOR_PAIR(1) | A_BOLD);
                             mvprintw(x, y, "%c", map[x][y]);
                             attroff(COLOR_PAIR(1));
+                            break;
+
+                        case 'D':
+                            attron(COLOR_PAIR(3) | A_BOLD);
+                            mvprintw(x, y, "%c", map[x][y]);
+                            attroff(COLOR_PAIR(3));
+                            break;
+                        case 'F':
+                            attron(COLOR_PAIR(3) | A_BOLD);
+                            mvprintw(x, y, "%c", map[x][y]);
+                            attroff(COLOR_PAIR(3));
+                            break;
+                        case 'G':
+                            attron(COLOR_PAIR(3) | A_BOLD);
+                            mvprintw(x, y, "%c", map[x][y]);
+                            attroff(COLOR_PAIR(3));
+                            break;
+                        case 's':
+                            attron(COLOR_PAIR(3) | A_BOLD);
+                            mvprintw(x, y, "%c", map[x][y]);
+                            attroff(COLOR_PAIR(3));
+                            break;
+                        case 'U':
+                            attron(COLOR_PAIR(3) | A_BOLD);
+                            mvprintw(x, y, "%c", map[x][y]);
+                            attroff(COLOR_PAIR(3));
                             break;
                         }
                     }
@@ -1081,8 +1249,101 @@ void food_placed(room map_rooms[6], int rows, int cols, char map[rows][cols])
                 y = rand() % map_rooms[i].size_y + map_rooms[i].y;
             } while (map[y][x] != '.');
             map_rooms[i].num_food++;
-            map[y][x] = 'F';
+            map[y][x] = 'f';
         }
+    }
+}
+
+void monster_placed(room map_rooms[6], int rows, int cols, char map[rows][cols])
+{
+
+    int i, k = 0;
+
+    i = rand() % 6;
+
+    int x, y;
+    do
+    {
+        x = rand() % map_rooms[i].size_x + map_rooms[i].x;
+        y = rand() % map_rooms[i].size_y + map_rooms[i].y;
+    } while (map[y][x] != '.');
+    map_rooms[i].num_monster++;
+    map[y][x] = 'D'; // deamon
+    monsts[k].health = 5;
+    monsts[k].point.x = x;
+    monsts[k].point.y = y;
+    int room = check_position_of_object(y, x, rows, cols, map, map_rooms);
+    monsts[k].room = room;
+    monsts[k++].type = 'D';
+
+    for (int y = 0; y < 3; y++)
+    {
+        i = rand() % 6;
+
+        do
+        {
+            x = rand() % map_rooms[i].size_x + map_rooms[i].x;
+            y = rand() % map_rooms[i].size_y + map_rooms[i].y;
+        } while (map[y][x] != '.');
+        map_rooms[i].num_monster++;
+        map[y][x] = 'F'; // fire breathing monster
+        i = rand() % 6;
+        monsts[k].health = 10;
+        monsts[k].point.x = x;
+        monsts[k].point.y = y;
+        int room = check_position_of_object(y, x, rows, cols, map, map_rooms);
+        monsts[k].room = room;
+        monsts[k++].type = 'F';
+
+        do
+        {
+            x = rand() % map_rooms[i].size_x + map_rooms[i].x;
+            y = rand() % map_rooms[i].size_y + map_rooms[i].y;
+        } while (map[y][x] != '.');
+        map_rooms[i].num_monster++;
+        map[y][x] = 'U'; // undeed
+        monsts[k].health = 30;
+        monsts[k].point.x = x;
+        monsts[k].point.y = y;
+        room = check_position_of_object(y, x, rows, cols, map, map_rooms);
+        monsts[k].room = room;
+        monsts[k++].type = 'U';
+        return;
+    }
+
+    i = rand() % 6;
+
+    do
+    {
+        x = rand() % map_rooms[i].size_x + map_rooms[i].x;
+        y = rand() % map_rooms[i].size_y + map_rooms[i].y;
+    } while (map[y][x] != '.');
+    map_rooms[i].num_monster++;
+    map[y][x] = 'G'; // giant
+    monsts[k].health = 15;
+    monsts[k].point.x = x;
+    monsts[k].point.y = y;
+    room = check_position_of_object(y, x, rows, cols, map, map_rooms);
+    monsts[k].room = room;
+    monsts[k++].type = 'G';
+
+    for (int y = 0; y < 2; y++)
+    {
+        i = rand() % 6;
+
+        do
+        {
+            x = rand() % map_rooms[i].size_x + map_rooms[i].x;
+            y = rand() % map_rooms[i].size_y + map_rooms[i].y;
+        } while (map[y][x] != '.');
+        map_rooms[i].num_monster++;
+        map[y][x] = 's'; //  snake
+        monsts[k].health = 20;
+        monsts[k].point.x = x;
+        monsts[k].point.y = y;
+        int room = check_position_of_object(y, x, rows, cols, map, map_rooms);
+        monsts[k].room = room;
+        monsts[k++].type = 's';
     }
 }
 
@@ -1111,7 +1372,7 @@ void placed_weopen(room map_rooms[6], int rows, int cols, char map[rows][cols])
         y = rand() % map_rooms[i].size_y + map_rooms[i].y;
     } while (map[y][x] != '.');
     map_rooms[i].num_food++;
-    map[y][x] = 'D'; // dagger
+    map[y][x] = 'd'; // dagger
 
     i = rand() % 6;
 
@@ -1524,8 +1785,14 @@ void show_foods(player user)
             if (choice == 0 && user.num_foods > 0)
             {
                 user.num_foods--;
+                if (foods[user.num_foods].time > 32) // sami shodan
+                {
+                    user.health--;
+                    if (user.health == 0)
+                        return;
+                }
                 user.num_of_eaten_food++;
-                if (user.health < 10)
+                if (user.health < 20)
                 {
                     user.health += user.num_of_eaten_food / (u * 3);
                     if (user.num_of_eaten_food / (u * 3) != 0)
@@ -1624,6 +1891,7 @@ void show_weapons(player user)
     wrefresh(weopen_menu);
     return;
 }
+
 int move_char(int input, player *user, int cols, int rows, char map[rows][cols], room map_rooms[6], int n)
 {
 
@@ -1653,7 +1921,7 @@ int move_char(int input, player *user, int cols, int rows, char map[rows][cols],
     {
         // nodelay(stdscr, FALSE);
         show_foods(*user);
-        display_map(user, cols, rows, map, map_rooms, n);
+        return 1;
     }
 
     else if (input == 'i')
@@ -1663,6 +1931,7 @@ int move_char(int input, player *user, int cols, int rows, char map[rows][cols],
     }
 
     int current_room = check_position_of_object(initial_y, initial_x, rows, cols, map, map_rooms);
+
     switch (map[initial_y][initial_x])
     {
     case '.':
@@ -1734,13 +2003,16 @@ int move_char(int input, player *user, int cols, int rows, char map[rows][cols],
         }
         return 1;
 
-    case 'F': // food
+    case 'f': // food
         c = getch();
         if (c == 10)
         {
             if (user->num_foods <= 4)
             {
                 user->num_foods++;
+                foods[user->num_foods - 1].time = time(NULL);
+                foods[user->num_foods - 1].pos.x = initial_x;
+                foods[user->num_foods - 1].pos.y = initial_y;
                 user->position.y = initial_y;
                 user->position.x = initial_x;
                 attron(COLOR_PAIR(user->color));
@@ -1802,7 +2074,7 @@ int move_char(int input, player *user, int cols, int rows, char map[rows][cols],
             move_char(c, user, cols, rows, map, map_rooms, n);
         }
         return 1;
-    case 'D':
+    case 'd':
         c = getch();
         if (c == 10)
         {
@@ -1912,6 +2184,48 @@ int move_char(int input, player *user, int cols, int rows, char map[rows][cols],
             attroff(COLOR_PAIR(user->color));
             move_char(c, user, cols, rows, map, map_rooms, n);
         }
+
+    case 'D':
+    case 'G':
+    case 's':
+    case 'U':
+    case 'F':
+        int num_monst;
+        for (int y = 0; y < 12; y++)
+        {
+            if (monsts[y].point.x == initial_x && monsts[y].point.y == initial_y && monsts[y].health > 0)
+            {
+                num_monst = y;
+                break;
+            }
+        }
+        monsts[num_monst].health--;
+        if (monsts[num_monst].health == 0)
+        {
+            user->position.y = initial_y;
+            user->position.x = initial_x;
+            attron(COLOR_PAIR(user->color));
+            mvaddch(user->position.y, user->position.x, '@');
+            attroff(COLOR_PAIR(user->color));
+            map[initial_y][initial_x] = '.';
+            display_map(user, cols, rows, map, map_rooms, n);
+            attron(COLOR_PAIR(user->color));
+            mvaddch(user->position.y, user->position.x, '@');
+            attroff(COLOR_PAIR(user->color));
+        }
+        else
+        {
+            initial_x = user->position.x;
+            initial_y = user->position.y;
+            attron(COLOR_PAIR(user->color));
+            mvaddch(user->position.y, user->position.x, '@');
+            attroff(COLOR_PAIR(user->color));
+            display_map(user, cols, rows, map, map_rooms, n);
+            attron(COLOR_PAIR(user->color));
+            mvaddch(user->position.y, user->position.x, '@');
+            attroff(COLOR_PAIR(user->color));
+        }
+
         return 1;
     }
 }
@@ -2001,6 +2315,8 @@ void control_play_in_a_floor(int rows, int cols, int floor,
     gold_placed(map_rooms, rows, cols, map);
     food_placed(map_rooms, rows, cols, map);
     placed_weopen(map_rooms, rows, cols, map);
+    monster_placed(map_rooms, rows, cols, map);
+
     int k;
     // nodelay(stdscr, TRUE);
     do
@@ -2094,7 +2410,7 @@ void new_game(Gamer *g)
     user.gold = 0;
     user.score = 0;
     user.level = 1;
-    user.health = 10;
+    user.health = 20;
     user.num_foods = 0;
     user.num_of_eaten_food = 0;
     user.hunger_level = 0;
@@ -2156,7 +2472,7 @@ void continue_game(Gamer *g, const char *filename)
     load_player_info(g, &user);
     room all_floor_rooms[6];
     player_initial_pos = 0;
-    control_play_in_a_floor(rows - 3, cols - 3, user.level-1,
+    control_play_in_a_floor(rows - 3, cols - 3, user.level - 1,
                             all_floor_rooms, &user, g);
 
     refresh();
